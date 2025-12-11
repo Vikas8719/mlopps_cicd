@@ -1,0 +1,54 @@
+name: "CI/CD: build & deploy"
+
+on:
+    push:
+        branches: [ "main" ]
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: Set up QEMU (optional, for cross build)
+            uses: docker/setup-qemu-action@v2
+
+          - name: Log in to registry
+            uses: docker/login-action@v2
+            with:
+              registry: ghcr.io
+              username: ${{ github.actor }}
+              password: ${{ secrets.GITHUB_TOKEN }}
+
+          - name: Build and push image
+            uses: docker/build-push-action@v4
+            with:
+              push: true
+              tags: ghcr.io/${{ github.repository }}:latest
+
+          - name: Setup kubectl
+            uses: azure/setup-kubectl@v3
+            with:
+              version: 'latest'
+
+          - name: Configure kubeconfig
+            run: |
+              echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
+              export KUBECONFIG=$PWD/kubeconfig
+              kubectl config view
+            env:
+              KUBECONFIG_DATA: ${{ secrets.KUBECONFIG_DATA }}
+
+          - name: Deploy to Kubernetes
+            env:
+              IMAGE: ghcr.io/${{ github.repository }}:latest
+            run: |
+              # replace image placeholders in manifest (simple sed)
+              sed -i "s|ghcr.io/<OWNER>/<REPO>:latest|${IMAGE}|g" k8s/app-deployment.yaml
+              kubectl apply -f k8s/mlflow-deployment.yaml
+              kubectl apply -f k8s/app-deployment.yaml
+              kubectl apply -f k8s/app-service.yaml
+
+          - name: Show pods
+            run: kubectl get pods -o wide

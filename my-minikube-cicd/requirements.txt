@@ -1,0 +1,7 @@
+flask
+gunicorn
+mlflow
+pandas
+scikit-learn
+# add any other libs you need
+numpy
