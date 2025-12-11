@@ -16,4 +16,5 @@ ENV PORT=8080
 EXPOSE 8080
 
 # default command - run app (serve model/api)
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:8080", "--workers", "1"]
+CMD ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8080"]
+
