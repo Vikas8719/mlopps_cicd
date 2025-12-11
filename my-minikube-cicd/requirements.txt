@@ -1,7 +1,12 @@
-flask
-gunicorn
+fastapi
+uvicorn
 mlflow
-pandas
 scikit-learn
-# add any other libs you need
+pandas
 numpy
+matplotlib
+seaborn
+joblib
+xgboost
+pytest
+

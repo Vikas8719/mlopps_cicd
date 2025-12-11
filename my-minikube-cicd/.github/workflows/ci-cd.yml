@@ -11,7 +11,31 @@ jobs:
           - name: Checkout
             uses: actions/checkout@v4
 
-          - name: Set up QEMU (optional, for cross build)
+          # -------------------------
+          # Setup Python for Testing
+          # -------------------------
+          - name: Set up Python
+            uses: actions/setup-python@v4
+            with:
+              python-version: '3.10'
+
+          - name: Install dependencies for testing
+            run: |
+              pip install --upgrade pip
+              pip install -r requirements.txt
+              pip install pytest
+
+          # -------------------------
+          # Run Tests
+          # -------------------------
+          - name: Run Unit Tests
+            run: |
+              pytest test.py
+
+          # -------------------------
+          # Build & Push Docker Image
+          # -------------------------
+          - name: Set up QEMU (optional)
             uses: docker/setup-qemu-action@v2
 
           - name: Log in to registry
@@ -27,6 +51,9 @@ jobs:
               push: true
               tags: ghcr.io/${{ github.repository }}:latest
 
+          # -------------------------
+          # Kubernetes Deploy
+          # -------------------------
           - name: Setup kubectl
             uses: azure/setup-kubectl@v3
             with:
@@ -44,7 +71,6 @@ jobs:
             env:
               IMAGE: ghcr.io/${{ github.repository }}:latest
             run: |
-              # replace image placeholders in manifest (simple sed)
               sed -i "s|ghcr.io/<OWNER>/<REPO>:latest|${IMAGE}|g" k8s/app-deployment.yaml
               kubectl apply -f k8s/mlflow-deployment.yaml
               kubectl apply -f k8s/app-deployment.yaml
