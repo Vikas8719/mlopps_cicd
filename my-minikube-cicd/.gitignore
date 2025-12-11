@@ -1,0 +1,45 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Environment variables
+.env
+*.env
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# MLflow local runs
+mlruns/
+
+# Data files
+data/
+datasets/
+*.csv
+*.xlsx
+*.parquet
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+Dockerfile
