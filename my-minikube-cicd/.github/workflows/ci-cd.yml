@@ -2,7 +2,7 @@ name: "CI/CD: build & deploy"
 on:
   push:
     branches: ["main"]
-  workflow_dispatch:
+  
 
 jobs:
   build-and-deploy:
@@ -56,7 +56,12 @@ jobs:
 
       - name: Configure kubeconfig
         run: |
-          echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > kubeconfig
+          # Ensure the secret KUBECONFIG_DATA exists in your repository/organization secrets
+          if [ -z "${{ secrets.KUBE_CONFIG_DATA }}" ]; then
+            echo "ERROR: KUBECONFIG_DATA secret is not set. Please add it to your repository or organization secrets."
+            exit 1
+          fi
+          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > kubeconfig
           export KUBECONFIG=$PWD/kubeconfig
           kubectl config view
 
