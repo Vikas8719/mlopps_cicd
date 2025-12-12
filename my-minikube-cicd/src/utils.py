@@ -1,40 +1,63 @@
 import pickle
 import mlflow
 import os
-
-# Paths (inside Docker/Kubernetes container)
-MODEL_PATH = "models/spam_model.pkl"
-VECTORIZER_PATH = "models/tfidf_vectorizer.pkl"
+from pathlib import Path
 
 # -------------------------
-# Load TF-IDF + Model
+# File Paths (Docker/K8s safe)
 # -------------------------
+MODEL_PATH = Path("models/spam_model.pkl")
+VECTORIZER_PATH = Path("models/tfidf_vectorizer.pkl")
+
+# -------------------------
+# Load model + vectorizer only once (FAST)
+# -------------------------
+
+# Global cache (loaded once)
+_vectorizer = None
+_model = None
+
 def load_model_and_vectorizer():
-    """Load saved model and vectorizer."""
+    """Load saved model and vectorizer once (cached)."""
+
+    global _vectorizer, _model
+
+    if _vectorizer is not None and _model is not None:
+        return _vectorizer, _model
+
+    # File checks
+    if not VECTORIZER_PATH.exists():
+        raise FileNotFoundError(f"Vectorizer file missing: {VECTORIZER_PATH}")
+
+    if not MODEL_PATH.exists():
+        raise FileNotFoundError(f"Model file missing: {MODEL_PATH}")
+
+    # Load vectorizer
     with open(VECTORIZER_PATH, "rb") as f:
-        vectorizer = pickle.load(f)
+        _vectorizer = pickle.load(f)
 
+    # Load ML model
     with open(MODEL_PATH, "rb") as f:
-        model = pickle.load(f)
+        _model = pickle.load(f)
 
-    return vectorizer, model
+    return _vectorizer, _model
 
 
 # -------------------------
 # Prediction Function
 # -------------------------
 def predict_message(message: str):
-    """Predict spam/ham from text message."""
-    
+    """Predict SPAM or HAM from input text."""
+
     vectorizer, model = load_model_and_vectorizer()
 
-    # Vectorize input text
+    # Vectorize
     msg_vec = vectorizer.transform([message])
 
-    # Prediction
-    pred = model.predict(msg_vec)[0]
+    # Predict
+    pred = model.predict(msg_vec)[0]   # returns 0 or 1
 
-    # Human readable output
+    # Convert numeric → label
     label = "SPAM" if pred == 1 else "HAM"
 
     return pred, label
@@ -44,6 +67,14 @@ def predict_message(message: str):
 # MLflow Logging Utility
 # -------------------------
 def log_prediction_to_mlflow(message: str, prediction: int):
-    """Logs prediction event into MLflow."""
-    mlflow.log_param("input_length", len(message))
-    mlflow.log_param("prediction_raw", int(prediction))
+    """
+    Logs prediction event to MLflow.
+    Safe for Docker, Minikube, AWS, GCP, Azure.
+    """
+    try:
+        mlflow.log_param("input_text_length", len(message))
+        mlflow.log_param("prediction_raw", int(prediction))
+        mlflow.log_text(message, "input_text.txt")
+    except Exception as e:
+        # Avoid app crash during logging
+        print(f"MLflow logging error: {e}")
