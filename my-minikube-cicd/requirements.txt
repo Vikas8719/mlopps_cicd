@@ -9,4 +9,5 @@ seaborn
 joblib
 xgboost
 pytest
+# Additional dependencies can be added as needed
 
