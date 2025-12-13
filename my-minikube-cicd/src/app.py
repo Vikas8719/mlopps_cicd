@@ -3,7 +3,8 @@ from pydantic import BaseModel
 import os
 import mlflow
 import joblib
-from utils import predict_message, log_prediction_to_mlflow
+from src.utils import predict_message, log_prediction_to_mlflow
+
 
 # MLflow URI
 MLFLOW_URI = os.environ.get("MLFLOW_TRACKING_URI", "http://localhost:5000")
