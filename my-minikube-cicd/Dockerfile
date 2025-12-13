@@ -2,16 +2,15 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Copy requirements first for caching
+# Copy requirements for caching
 COPY requirements.txt .
-
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code + model
+# Copy src folder and model
 COPY src/ ./src/
-COPY model.joblib .
+COPY model.pkl .
 
-# Env variables
+# Environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8080
 ENV MLFLOW_TRACKING_URI=http://mlflow-service:5000
