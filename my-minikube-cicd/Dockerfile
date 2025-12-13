@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy src folder and model
 COPY src/ ./src/
-COPY model.pkl .
+COPY src/spam_model.pkl ./src/spam_model.pkl
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1

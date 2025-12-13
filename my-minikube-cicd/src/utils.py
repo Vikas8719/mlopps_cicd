@@ -6,8 +6,16 @@ from pathlib import Path
 # -------------------------
 # File Paths (Docker/K8s safe)
 # -------------------------
-MODEL_PATH = Path("models/spam_model.pkl")
-VECTORIZER_PATH = Path("models/tfidf_vectorizer.pkl")
+from pathlib import Path
+import os
+
+# -------------------------
+# File Paths (Docker/K8s safe)
+# -------------------------
+BASE_DIR = Path(__file__).parent  # src folder ke andar
+MODEL_PATH = BASE_DIR / "spam_model.pkl"
+VECTORIZER_PATH = BASE_DIR / "tfidf_vectorizer.pkl"
+
 
 # -------------------------
 # Load model + vectorizer only once (FAST)
