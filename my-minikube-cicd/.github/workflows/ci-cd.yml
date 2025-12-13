@@ -44,7 +44,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/vikas8719/mlopps_cicd:latest
+
 
       # -------------------------
       # Kubernetes Deploy
@@ -67,8 +68,9 @@ jobs:
 
       - name: Deploy to Kubernetes
         env:
-          IMAGE: ghcr.io/${{ github.repository }}:latest
-        run: |
+          IMAGE: ghcr.io/vikas8719/mlopps_cicd:latest
+
+        run: |  
           echo "Using image: $IMAGE"
 
           # replace image line inside deployment file
